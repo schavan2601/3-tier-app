@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  tier1:
+    image: yourdockerhub/tier1:latest
+    build: ./tier1
+    ports:
+      - "80:80"
+    depends_on:
+      - tier2
+
+  tier2:
+    image: yourdockerhub/tier2:latest
+    build: ./tier2
+    environment:
+      - DB_HOST=tier3
+    depends_on:
+      - tier3
+
+  tier3:
+    image: yourdockerhub/tier3:latest
+    build: ./tier3
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
