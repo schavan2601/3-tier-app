@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tier1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: tier1
+  template:
+    metadata:
+      labels:
+        app: tier1
+    spec:
+      containers:
+      - name: tier1
+        image: yourdockerhub/tier1:latest
+        ports:
+        - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tier1
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: tier1
+    
