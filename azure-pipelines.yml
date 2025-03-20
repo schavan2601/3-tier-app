@@ -1,0 +1,48 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  dockerRegistryServiceConnection: 'your-dockerhub-connection'
+  imageRepository: 'yourdockerhub'
+  tag: '$(Build.BuildId)'
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.8'
+    addToPath: true
+
+- script: |
+    docker build -t $(imageRepository)/tier1:$(tag) ./tier1
+    docker build -t $(imageRepository)/tier2:$(tag) ./tier2
+    docker build -t $(imageRepository)/tier3:$(tag) ./tier3
+  displayName: 'Build Docker Images'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: $(dockerRegistryServiceConnection)
+    repository: $(imageRepository)/tier1
+    command: 'push'
+    tags: $(tag)
+
+- task: Docker@2
+  inputs:
+    containerRegistry: $(dockerRegistryServiceConnection)
+    repository: $(imageRepository)/tier2
+    command: 'push'
+    tags: $(tag)
+
+- task: Docker@2
+  inputs:
+    containerRegistry: $(dockerRegistryServiceConnection)
+    repository: $(imageRepository)/tier3
+    command: 'push'
+    tags: $(tag)
+
+- script: |
+    kubectl apply -f deployment.yaml
+  displayName: 'Deploy to Kubernetes'
+  
